@@ -40,8 +40,6 @@
 
 <h4>Below are the questions that were answered in the statistical analysis using R:</h4>
 <ol type="1">
-  <li>What is the age distribution of patients attending the hospital?</li>
-  <li>Which age group has the highest total expenditure in the hospital?</li>
   <li>Which group based on diagnosis (Aprdrg) has the highest total expenditure in the hospital?</li>
   <li>Is the patient's race related to the total amount spent on hospital admissions?</li>
   <li>The combination of age and gender of patients influences the total expenditure on hospitalizations?</li>
