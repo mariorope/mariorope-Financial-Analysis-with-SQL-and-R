@@ -5,7 +5,7 @@ library(dplyr)
 library(sqldf)
 
 # Loading dataset
-data <- read.csv('dataset.csv')
+data <- read.csv('../data/dataset.csv')
 
 # Checking dataset dimensions
 dim(data)

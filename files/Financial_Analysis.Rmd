@@ -1,162 +1,375 @@
 ---
-title: "Financial_Analysis"
+title: "Comprehensive Financial Analysis: Leveraging SQL and R for Hospital Cost Evaluation"
 output: html_document
 date: "2023-02-21"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
-## R Markdown
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 2em 0 2em 0">
+<h5>Introduction:</h5>
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+This project undertakes a comprehensive analysis of hospital cost data derived from a national survey conducted by the US Agency for Healthcare. Focused on hospital records of inpatient samples in the city of Wisconsin, specifically targeting patients aged 0 to 17 years, the project employs a two-step approach. Step 1 entails exploratory data analysis using SQL language to address pertinent business questions, while Step 2 involves statistical analysis using R language, employing techniques such as ANOVA Test and Linear Regression to derive insights and answer additional business questions.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+<h5>Data Sources:</h5>
+
+The dataset utilised in this project originates from two primary sources: the Medicare Provider Cost Report Hospital Cost PUF (Public Use File) and HealthData.gov. These sources provide a rich and diverse dataset, enabling a thorough examination of hospital costs and patient demographics.
+
+<h5>Exploratory Data Analysis with SQL Language (step 1):</h5>
+
+Step 1 of the project involves exploring the dataset using SQL language to answer ten key business questions. These questions encompass various aspects of patient demographics, expenditure on hospital admissions, and racial disparities in healthcare utilisation. The insights gleaned from this exploratory analysis serve as a foundation for further statistical analysis in Step 2.
+
+<h5>Statistical Analysis using R (step 2):</h5>
+
+In Step 2, statistical analysis is conducted using R language, employing techniques such as ANOVA Test and Linear Regression to delve deeper into the dataset and address additional business questions. These questions encompass diverse aspects of patient demographics, expenditure patterns, and predictive modelling of hospitalisation costs based on demographic factors.
+
+<h5>Key Findings and Business Insights:</h5>
+
+The analysis yields valuable insights into the distribution of patient demographics, expenditure patterns across different age groups, diagnoses, racial disparities in healthcare spending, and predictive modelling of hospitalisation costs. These insights are instrumental in informing decision-making processes within the healthcare sector, facilitating resource allocation, and addressing disparities in healthcare delivery.
+
+<h5>Conclusion:</h5>
+
+In conclusion, this project demonstrates the power of combining SQL and R for comprehensive financial analysis in the healthcare domain. By leveraging advanced analytical techniques, valuable insights are derived, contributing to a deeper understanding of hospital cost dynamics and patient demographics. Moving forward, these insights can inform strategic decision-making processes aimed at enhancing healthcare delivery and optimising resource allocation in hospital settings.
+
+<h5>Dictionary of Variables:</h5>
+
+<ul>
+  <li><span style="font-weight: bold">Age</span> - age of patients (years).</li>
+  <li><span style="font-weight: bold">Female</span> - gender of patients (1 = female and 0 = male).</li>
+  <li><span style="font-weight: bold">LOS</span> - length of stay (days).</li>
+  <li><span style="font-weight: bold">Race</span> - a social construct that is used to group people based on physical characteristics, behavioral patterns, and geographic location (each number represents a race).</li>
+  <li><span style="font-weight: bold">TOTCHG</span> - total charges (USD, rounded).</li>
+  <li><span style="font-weight: bold">APRDRG</span> - the Diagnosis Related Groups (DRGs) are a patient classification scheme which provides a means of relating the type of patients a hospital treats (i.e., its case mix) to the costs incurred by the hospital.(All Patient Refined Diagnosis Related Group).</li>
+</ul>
+
+<h4>Let's get started!</h4>
+</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #89CFF0; padding: 0.5em 0.5em 1.2em 0.5em; text-align: center"><h3>Loading and Checking the Data</h3></div>
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">Let's start by loading the libraries used in this project.</div>
 
 ```{r Loading libraries}
 library(dplyr)
 library(sqldf)
+library(ggplot2)
 ```
 
-## Including Plots
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">Loading the dataset and assigning it to the variable 'data'. Following that, let's check the first rows of the data.</div>
 
-You can also embed plots, for example:
-
-```{r Loading dataset}
-data <- read.csv('dataset.csv')
+```{r Loading and visualising the dataset}
+data <- read.csv('../data/dataset.csv')
+head(data)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">As we can see, the table is very simple and contains registers of patients that needed hospitalisation services. As mentioned before, a few characteristics (features) of the patients, including AGE, FEMALE, LOS, RACE, TOTCHG and APRDRG are also presented on the table.
+
+Let's see the dimension of the data to check the number of observations and features. Moreover, let's also investigate if there are missing values (NA).</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+dim(data)
+colSums(is.na(data)) 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">The data presents 500 observations (rows) and 6 features (columns). With respect to missing values, there is only one register with a missing value for the feature RACE. In this case, as one missing value out of 500 observations corresponds to 0.2%, let's remove this register. Moreover, let's also check the data type of the features.</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+data <- na.omit(data)
+str(data)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">As we can see, all the variables were loaded as integers. In this case, let's change RACE and FEMALE to the factor type, recheck the types of variables to confirm the changes.</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+data$RACE <- as.factor(data$RACE)
+data$FEMALE <- as.factor(data$FEMALE)
+str(data)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">Changes were successfully performed, so let's move on to the exploratory analysis.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #89CFF0; padding: 0.5em 0.5em 1.2em 0.5em; text-align: center"><h3>Exploratory Analysis with SQL</h3></div>
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">Be aware that in this step, only basic statistical procedures and tools were employed, such as count, aggregation, mean, mode, variance, were used to answer very basic question that can also be considered part of the exploratory analysis stage. Let's recheck the feature names to proceed with the questions of the first step.</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+names(data)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em";><h5>1- How many races are represented in the dataset and what is the distribution of patients among races?</h5></div>
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">In order to answer this question the data was grouped by RACE and perform the count() function to retrieve the number of patients per RACE. The result can be seen in the table below.</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+num_races <- sqldf('SELECT RACE, COUNT(RACE) as Num_Races FROM data GROUP BY RACE')
+num_races
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">The table above shows a much larger number of patients within the RACE 1 group compared to all others. Nearly all patients were from RACE 1 (484), followed by RACE 2 (6), and so on. The dataset presented 6 RACES and the distribution of patients was concentrated on RACE 1.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>2- What is the average age of patients?</h5></div>
+<div style="margin-top: 1em"></div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+mean_age <- sqldf('SELECT AVG(AGE) as mean_age FROM data')
+mean_age
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">The average age of patients was about 5 years. As it seems very low, let's also see the distribution of the patients' age.</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+num_age <- sqldf('SELECT AGE, COUNT(AGE) as Num_Age FROM data GROUP BY AGE')
+num_age
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">The table above seems a bit weird as the majority of patients (>300) were 0 years old. This could be an error or missing values for example, however, for the sake of this project, it was considered that most patients were babies before completing 1 year.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>3- What is the age mode of the patients?</h5></div>
+<div style="margin-top: 1em"></div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+mode_age <- sqldf('SELECT AGE FROM 
+                  (SELECT AGE, COUNT(AGE) AS count_age FROM data
+                  GROUP BY AGE
+                  ORDER BY count_age DESC)
+                  LIMIT 1')
+mode_age
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">The mode is the value that most occur, which in this case is 0, as we have previously seen on the graph for the previous questions.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>4- What is the variance of the age?</h5></div>
+<div style="margin-top: 1em"></div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+variance_age <- sqldf("SELECT SUM((AGE - (SELECT AVG(AGE) FROM data)) * (AGE - (SELECT AVG(AGE) FROM data))) / (COUNT(AGE) - 1) AS variance FROM data")
+variance_age
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">The variance is a measure that indicates how much the data varies around the mean. In this case, the variance of the age was 48.34.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>5- What is the total expenditure on hospital admissions by age?</h5></div>
+<div style="margin-top: 1em"></div>
+
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">The patients that attended the hospital were grouped by AGE and the total expenditure was calculated by summing the total charges (TOTCHG).</div>
+
 
 ```{r }
-data <- read.csv('dataset.csv')
+total_expenditure_age <- sqldf('SELECT AGE, 
+                                SUM(TOTCHG) as Total_Expenditure 
+                                FROM data 
+                                GROUP BY AGE')
+total_expenditure_age
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">As presented above, the highest average expenditure was for the patients on group AGE 0. However, as we have seen, most of patients were also from this group. Therefore, it makes sense to check the expenditure per capta grouped by age.</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+total_expenditure_percapta_age <- sqldf('SELECT AGE, 
+                                SUM(TOTCHG)/COUNT(TOTCHG) as Total_Expenditure_PerCapta
+                                FROM data 
+                                GROUP BY AGE')
+total_expenditure_percapta_age
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">Looking at the expenditures per capt, the group AGE 3 and 9 were the ones that caused most expenses per capt, whereas the group AGE 0 was the one with lower average expense.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>6- What age generates the highest total expenditure on hospital admissions?</h5></div>
+<div style="margin-top: 1em"></div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+highest_total_expenditure <- sqldf('SELECT AGE, Total_Expenditure
+                                    FROM total_expenditure_age
+                                    ORDER BY Total_Expenditure DESC
+                                    LIMIT 1')
+highest_total_expenditure
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">As we have just seen it, the group AGE 0 is the one that generated the highest average expenditure on hospital admissions.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>7- What is the total expenditure on hospital admissions by gender?</h5></div>
+<div style="margin-top: 1em"></div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+total_expenditure_gender <- sqldf('SELECT FEMALE as Gender, 
+                                   SUM(TOTCHG) as Total_expenditure 
+                                   FROM data 
+                                   GROUP BY FEMALE')
+total_expenditure_gender
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">For gender (FEMALE), the data was equally distributed, with about 53% males and 47% females.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>8- What is the average expenditure on hospital admissions by patient race?</h5></div>
+<div style="margin-top: 1em"></div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+mean_expenditure_race <- sqldf('SELECT RACE, 
+                                 AVG(TOTCHG) as Mean_expenditure 
+                                 FROM data 
+                                 GROUP BY RACE')
+mean_expenditure_race
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">As presented in the table above, RACE 2 was the one that caused higher average expenditure, followed by RACE 3. On the other hand, RACE 6 presented the lowest average expenditure on hospital admissions.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>9- What is the average total expenditure on hospitalizations, considering the patients over 10 years old?</h5></div>
+<div style="margin-top: 1em"></div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+mean_expenditure_age_above_10 <- sqldf('SELECT AGE, 
+                                        AVG(TOTCHG) as mean_expenditure 
+                                        FROM data 
+                                        WHERE AGE > 10 
+                                        GROUP BY AGE')
+mean_expenditure_age_above_10
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">When considering only patients that are 11 years old or more, the highest average expenditure concentrates on group AGE 17. In the other extreme, group AGE 11 presented an average expenditure nearly 1/3 below the one for group AGE 17.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>10- Considering the previous item, what age has an average expenditure greater than 3000?</h5></div>
+<div style="margin-top: 1em"></div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+mean_expenditure_above_3k_age_above_10 <- sqldf('SELECT AGE, 
+                                                 AVG(TOTCHG) as mean_expenditure 
+                                                 FROM data 
+                                                 WHERE AGE > 10 
+                                                 GROUP BY AGE 
+                                                 HAVING AVG(TOTCHG) > 3000')
+mean_expenditure_above_3k_age_above_10
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">As seen in the previous table and confirmed in this new table where only the average expenditure of group AGES that are above USD 3,000.00. These groups include AGE 12, 15 and 17.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #89CFF0; padding: 0.5em 0.5em 1.2em 0.5em; text-align: center"><h3>Regression Analysis using R</h3></div>
+
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">In the second step of this analysis, you can find a few more descriptive analysis, including correlation, ANOVA and linear models. In the end of this section I will present the key findings of this study.
+<ul>
+  <li><span style="font-weight: bold">Note:</span> The level of significance for all statistical tests were set to 0.05, and therefore, if the result of the test presents a p-value lower than 0.05, H0 is rejected.
+</ul>
+</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>11- Which diagnosis-based group (APRDRG) has the highest total hospital expenditure?</h5></div>
+<div style="margin-top: 1em"></div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+total_expenditure_based_on_diag = aggregate(TOTCHG ~ APRDRG, 
+                                            FUN = sum, 
+                                            data = data)
+
+total_expenditure_based_on_diag[which.max(total_expenditure_based_on_diag$TOTCHG),]
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">The diagnosis-based group with the highest total hospital expenditure (USD 463,822.00) was the APRDRG 640.</div>
+
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>12- Is the patient's race related to the total amount expenditure on hospital admissions?</h5></div>
+<div style="margin-top: 1em"></div>
+
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">
+In order to investigate if there was a correlation between race and the total amount expenditure on hospital admissions, the ANOVA method was applied as shown below.
+
+<ul>
+  <li>H0: There is no RACE effect on TOTCHG.</li>
+  <li>H1: There is RACE effect on TOTCHG.</li>
+</ul>
+</div>
+```{r }
+anova_model_1 <- aov(TOTCHG ~ RACE, data = data)
+summary(anova_model_1)
+```
+
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">The ANOVA test resulted in a p-value of 0.94. Therefore H0 is not rejected and we have not enough evidence to show that there is a significant difference for the total amount expenditure on hospital admissions between the RACE groups. In another words, there is no significant correlation between these variables.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>13- The combination of age and gender of patients influences the total expenditure in hospital admissions?</h5></div>
+<div style="margin-top: 1em"></div>
+
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">
+Anova was again applied to investigate if there was a correlation between age and gender, and the total amount expenditure on hospital admissions. The results of the test is presented below.
+
+<ul>
+  <li>H0: There is no effect of AGE and FEMALE (gender) on TOTCHG.</li>
+  <li>H1: There is effect of AGE and FEMALE in TOTCHG.</li>
+</ul>
+</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+anova_model_2 <- aov(TOTCHG ~ AGE + FEMALE, data = data)
+summary(anova_model_2)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">According to the test, both AGE and FEMALE (gender) presented p-values that were lower than 0.05, and therefore, these variables present a significant correlation with the total amount expenditure on hospital admissions. However, we have to keep in mind that the variable age presented too many patients with less than 1 year, which made this distribution very skewed.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>14- As length of stay is the crucial factor for inpatients, we want to find out if the dwell time can be predicted from age, gender and race.</h5></div>
+<div style="margin-top: 1em"></div>
+
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">To solve this question, it was used a Linear Regression model. The independent variables were AGE, FEMALE and RACE and the dependent variable was LOS.
+
+<ul>
+  <li>H0: There is no linear relationship between dependent and independent variables.</li>
+  <li>H1: There is a linear relationship between dependent and independent variables.</li>
+</ul>
+</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+linear_model_1 <- lm(LOS ~ AGE + FEMALE + RACE, data = data)
+summary(linear_model_1)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">With exception to the p-value for the intercept, all the p-values for the independent variables were above the threshold of 0.05. Therefore, we fail to reject the null hypothesis (H0) and conclude that we have not sufficient evidence to support the hypothesis that there is a linear relationship between dependent and independent variables. The R-squared was also very low, approximately 0. This result was expected as the AGE and RACE were very unbalanced, which does not help to differentiate the total amount expenditure among the categories of these variables.</div>
+
+<div style="margin-top: 2em"></div>
+<div style="background: #A1CAF1; padding: 0.25em 0.25em 0.25em 0.25em"><h5>15- Which variables have the greatest impact on hospitalization costs?</h5></div>
+<div style="margin-top: 1em"></div>
+
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">In order to tackle this problem, linear regression models were used. According to the p-values we will check the independent variables that are more correlated with the hospitalization costs, and therefore, causes more influence on the latter variable.
+Let's start by re-checking the name of the variables.</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+names(data)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">In this part, we used 5 independent variables (AGE, FEMALE, LOS, RACE and APRDRG) and one dependent (TOTCHG). The hypothesis test can be seen below:
+<ul>
+  <li>H0: There is no linear relationship between dependent and independent variables.</li>
+  <li>H1: There is a linear relationship between dependent and independent variables.</li>
+</ul>
+
+Let's name the fisrt model as 'linear_model_2' as there was a previous linear model created.
+</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+linear_model_2 <- lm(TOTCHG ~ ., data = data)
+summary(linear_model_2) 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">Acoording to the results from the analysis with the linear model and including all variables, the variables AGE, LOS and APRDRG presented a linear relationship with the dependent variable TOTCHG. R-Squared (R² or the coefficient of determination) is a statistical measure in a regression model that determines the proportion of variance in the dependent variable that can be explained by the independent variable.Therefore, in this case, our model including all variables could explaing about 55% of the variance in the variable dependent (TOTCHG).
+
+Let's create a new model including only the selected variables and see if there will be any significant changes in the R-squared, which are not expected.</div>
 
 ```{r }
-data <- read.csv('dataset.csv')
+linear_model_3 <- lm(TOTCHG ~ AGE + LOS + APRDRG, data = data)
+summary(linear_model_3) 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<div style="background: rgba(198,230,251,0.3); padding: 1em 1em 1em 1em; margin: 1em 0 1em 0">As expected, the change was not significant, and the model can still explain about 55% of the variance in the variable dependent (TOTCHG). We have to keep in mind that t is a very simple model with only three predictors and some problems on the data that was not adequately treated in this project as there was not enough data to pre-process for improvements and it was not the focus of it.
+
+Anyway, the version 3 of the model is much simpler than version 1 as there are only three independent variables compared to 5, respectively. Moreover, a very similar level of explanation of the variance of the dependent variable was obtained with both models. In conclusion, the variables that cause the greatest impact on hospitalization costs (TOTCHG) were AGE, LOS and APRDRG.</div>
+
