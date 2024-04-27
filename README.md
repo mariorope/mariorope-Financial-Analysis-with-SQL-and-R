@@ -1,28 +1,28 @@
-<h3>Title: Comprehensive Financial Analysis: Leveraging SQL and R for Hospital Cost Evaluation</h3><br>
+<h3>Title: Financial Analysis of Hospital Costs Using SQL and R</h3><br>
 
 **Introduction:**
 
-<p align="justify">This project undertakes a comprehensive analysis of hospital cost data derived from a national survey conducted by the US Agency for Healthcare. Focused on hospital records of inpatient samples in the city of Wisconsin, specifically targeting patients aged 0 to 17 years, the project employs a two-step approach. Step 1 entails exploratory data analysis using SQL language to address pertinent business questions, while Step 2 involves statistical analysis using R language, employing techniques such as ANOVA Test and Linear Regression to derive insights and answer additional business questions.</p>
+<p align="justify">This project, titled "Financial Analysis of Hospital Costs Using SQL and R" was conducted to perform a very basic analysis of hospital cost data sourced from a national survey by the US Agency for Healthcare. The study specifically focused on inpatient records of individuals aged 0 to 17 years from hospitals in Wisconsin.</p>
+
+**Objective:**
+
+<p align="justify">The principal aim of this project was to illustrate the use of SQL integrated with R for answering a few questions related to descriptive statistics and to use R to create simple hypothesis tests and linear models.</p>
+
+**Exploratory Data Analysis using SQL (step 1):**
+
+<p align="justify">This initial phase involved the use of SQL to explore key business questions around patient demographics, hospital expenditure, and racial disparities in healthcare utilisation. This helped lay the groundwork for more detailed statistical analysis.</p>
+
+**Statistical Analysis using R (step 2):**
+
+<p align="justify">The second phase included the use of statistical methods such as ANOVA Tests and Linear Regression to delve deeper into the data, addressing complex questions regarding expenditure patterns and the predictive modelling of hospitalisation costs.</p>
 
 **Data Sources:**
 
 <p align="justify">The dataset utilised in this project originates from two primary sources: the Medicare Provider Cost Report Hospital Cost PUF (Public Use File) and <a href="https://www. healthdata.gov/" target="_blank"> HealthData.gov</a>. These sources provide a rich and diverse dataset, enabling a thorough examination of hospital costs and patient demographics.</p>
 
-**Exploratory Data Analysis with SQL Language (step 1):**
-
-<p align="justify">Step 1 of the project involves exploring the dataset using SQL language to answer ten key business questions. These questions encompass various aspects of patient demographics, expenditure on hospital admissions, and racial disparities in healthcare utilisation. The insights gleaned from this exploratory analysis serve as a foundation for further statistical analysis in Step 2.</p>
-
-**Statistical Analysis using R (step 2):**
-
-<p align="justify">In Step 2, statistical analysis is conducted using R language, employing techniques such as ANOVA Test and Linear Regression to delve deeper into the dataset and address additional business questions. These questions encompass diverse aspects of patient demographics, expenditure patterns, and predictive modelling of hospitalisation costs based on demographic factors.</p>
-
-**Key Findings and Business Insights:**
-
-<p align="justify">The analysis yields valuable insights into the distribution of patient demographics, expenditure patterns across different age groups, diagnoses, racial disparities in healthcare spending, and predictive modelling of hospitalisation costs. These insights are instrumental in informing decision-making processes within the healthcare sector, facilitating resource allocation, and addressing disparities in healthcare delivery.</p>
-
 **Conclusion:**
 
-<p align="justify">In conclusion, this project demonstrates the power of combining SQL and R for comprehensive financial analysis in the healthcare domain. By leveraging advanced analytical techniques, valuable insights are derived, contributing to a deeper understanding of hospital cost dynamics and patient demographics. Moving forward, these insights can inform strategic decision-making processes aimed at enhancing healthcare delivery and optimising resource allocation in hospital settings.</p>
+<p align="justify">The project successfully demonstrated how SQL and R can be combined to conduct a comprehensive financial analysis in the healthcare domain.</p>
 
 <h4>Below are the questions that were answered in the exploratory data analysis with SQL Language:</h4>
 <ol type="1">
